@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Article Reader Site</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Georgia, serif;
+    background: #f5f5f5;
+    color: #111;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 40px;
+}
+
+textarea {
+    width: 100%;
+    height: 200px;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 8px 15px;
+    margin-right: 5px;
+}
+
+#editor {
+    margin-bottom: 40px;
+}
+
+.article-list a {
+    display: block;
+    margin-bottom: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>My Articles</h1>
+
+<div id="editor">
+    <input type="text" id="titleInput" placeholder="Article Title" style="width:100%; font-size:18px; margin-bottom:10px;">
+    <textarea id="contentInput" placeholder="Write your article here..."></textarea>
+    <br>
+    <button onclick="saveArticle()">Save Article</button>
+</div>
+
+<div class="article-list" id="articleList"></div>
+
+<div id="articleView"></div>
+
+</div>
+
+<script>
+function saveArticle() {
+    const title = document.getElementById("titleInput").value.trim();
+    const content = document.getElementById("contentInput").value.trim();
+
+    if (!title || !content) return alert("Title and content required.");
+
+    const articles = JSON.parse(localStorage.getItem("articles")) || {};
+    articles[title] = content;
+    localStorage.setItem("articles", JSON.stringify(articles));
+
+    loadArticles();
+}
+
+function loadArticles() {
+    const articles = JSON.parse(localStorage.getItem("articles")) || {};
+    const list = document.getElementById("articleList");
+    list.innerHTML = "";
+
+    for (let title in articles) {
+        const link = document.createElement("a");
+        link.href = "?article=" + encodeURIComponent(title);
+        link.textContent = title;
+        list.appendChild(link);
+    }
+}
+
+function loadArticleFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const title = params.get("article");
+    if (!title) return;
+
+    const articles = JSON.parse(localStorage.getItem("articles")) || {};
+    const content = articles[title];
+
+    if (!content) return;
+
+    document.getElementById("editor").style.display = "none";
+    document.getElementById("articleList").style.display = "none";
+
+    document.getElementById("articleView").innerHTML = `
+        <article>
+            <h1>${title}</h1>
+            <p>${content.replace(/\n/g, "</p><p>")}</p>
+        </article>
+    `;
+}
+
+loadArticles();
+loadArticleFromURL();
+</script>
+
+</body>
+</html>
